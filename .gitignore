@@ -1,0 +1,15 @@
+# Dépendances
+node_modules/
+
+# Variables d'environnement (secrets — ne jamais committer)
+.env
+.env.local
+.env.*.local
+
+# Builds
+dist/
+build/
+
+# Divers
+.DS_Store
+*.log
