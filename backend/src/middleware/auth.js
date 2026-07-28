@@ -1,10 +1,15 @@
 import { supabaseAuthCheck, supabaseAdmin } from '../services/supabaseAdmin.js';
 
-/**
- * Vérifie le token JWT envoyé par le frontend (header Authorization: Bearer ...).
- * Exige également que la session ait atteint le niveau AAL2 (= MFA validée),
- * sinon une session simple mot de passe ne suffit pas pour accéder à l'API.
- */
+function decodeJwtPayload(token) {
+  try {
+    const payloadBase64 = token.split('.')[1];
+    const json = Buffer.from(payloadBase64, 'base64url').toString('utf8');
+    return JSON.parse(json);
+  } catch {
+    return null;
+  }
+}
+
 export async function requireAuth(req, res, next) {
   try {
     const authHeader = req.headers.authorization || '';
@@ -19,13 +24,11 @@ export async function requireAuth(req, res, next) {
       return res.status(401).json({ error: 'Session invalide ou expirée.' });
     }
 
-    // Vérifie le niveau d'authentification (AAL2 = MFA complétée)
-    const { data: aalData } = await supabaseAuthCheck.auth.mfa.getAuthenticatorAssuranceLevel();
-    if (aalData?.currentLevel !== 'aal2') {
+    const payload = decodeJwtPayload(token);
+    if (payload?.aal !== 'aal2') {
       return res.status(403).json({ error: 'Double authentification requise pour cette action.' });
     }
 
-    // Récupère le profil (rôle, statut actif) avec le client admin
     const { data: profile } = await supabaseAdmin
       .from('profiles')
       .select('id, full_name, role, is_active')
@@ -45,7 +48,6 @@ export async function requireAuth(req, res, next) {
   }
 }
 
-/** À utiliser après requireAuth — restreint l'accès aux administrateurs. */
 export function requireAdmin(req, res, next) {
   if (req.profile?.role !== 'admin') {
     return res.status(403).json({ error: 'Accès réservé aux administrateurs.' });
