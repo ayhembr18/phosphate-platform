@@ -13,3 +13,4 @@ build/
 # Divers
 .DS_Store
 *.log
+backend/.cache/
