@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './contexts/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
+import AcceptInvite from './pages/AcceptInvite';
 
 import Login from './pages/Login';
 import MfaEnroll from './pages/MfaEnroll';
@@ -20,6 +21,7 @@ export default function App() {
         <Toaster position="top-right" toastOptions={{ style: { fontSize: '14px' } }} />
         <Routes>
           <Route path="/connexion" element={<Login />} />
+          <Route path="/invitation" element={<AcceptInvite />} />
           <Route path="/mfa/configuration" element={<MfaEnroll />} />
           <Route path="/mfa/verification" element={<MfaChallenge />} />
 

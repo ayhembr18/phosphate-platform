@@ -25,9 +25,10 @@ router.post('/users', requireAuth, requireAdmin, async (req, res) => {
   const { email, full_name, role } = parsed.data;
 
   try {
-    const { data, error } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
-      data: { full_name, role },
-    });
+const { data, error } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
+  data: { full_name, role },
+  redirectTo: `${process.env.FRONTEND_ORIGIN}/invitation`,
+});
     if (error) throw error;
 
     res.status(201).json({ user: data.user, message: 'Invitation envoyée par email.' });
