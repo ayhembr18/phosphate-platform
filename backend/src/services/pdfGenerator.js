@@ -23,7 +23,7 @@ export async function renderHtmlToPdf(html) {
       printBackground: true,
       margin: { top: '18mm', bottom: '16mm', left: '14mm', right: '14mm' },
     });
-    return pdfBuffer;
+      return Buffer.from(pdfBuffer);;
   } finally {
     await page.close();
   }
