@@ -116,31 +116,6 @@ npm run dev             # http://localhost:5173
 
 ---
 
-## 7. Idées d'évolutions possibles
-
-- **Alertes automatiques par email** quand une valeur dépasse le seuil défini pour
-  une ressource (déjà stocké en base — reste à brancher un envoi d'email, ex. via
-  Supabase Edge Functions + Resend/SendGrid)
-- **Export Excel/CSV** en plus du PDF, pour l'exploitation dans d'autres outils
-- **Comparaison période sur période** (ex. ce mois-ci vs mois précédent) sur le
-  tableau de bord
-- **Prévisions simples** (moyenne mobile, tendance linéaire) pour anticiper les
-  besoins d'approvisionnement
-- **Rôle "superviseur"** intermédiaire (accès lecture/écriture sur ses catégories
-  uniquement, sans droits d'administration complets)
-- **Mode sombre** pour les équipes en salle de contrôle
-- **Application mobile / PWA** pour la saisie terrain hors bureau
-- **Historique des connexions** par utilisateur (dates, IP) affiché à l'admin, en
-  plus du journal d'audit des données
-- **Signature électronique** ou validation à deux niveaux avant clôture d'un rapport
-  mensuel officiel
-- **Multi-sites** si la plateforme doit un jour couvrir plusieurs unités de
-  production (le schéma peut être étendu avec une table `sites` et une colonne
-  `site_id` sur les ressources)
-
----
-
-## 8. Notes
 
 - Tous les textes de l'interface sont en français.
 - Les identifiants de connexion des employés sont créés uniquement par un
