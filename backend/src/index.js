@@ -8,6 +8,7 @@ import adminRoutes from './routes/admin.js';
 import reportsRoutes from './routes/reports.js';
 
 const app = express();
+app.set('trust proxy', 1);
 
 app.use(helmet());
 app.use(express.json({ limit: '5mb' })); // images de graphiques en base64
