@@ -1,10 +1,24 @@
 import { Router } from 'express';
 import { z } from 'zod';
-import { supabaseAuthCheck } from '../services/supabaseAdmin.js';
+import { createClient } from '@supabase/supabase-js';
 import { requireAuth } from '../middleware/auth.js';
 import { renderHtmlToPdf, buildGeneralReportHtml, buildSingleChartHtml } from '../services/pdfGenerator.js';
 
 const router = Router();
+
+/**
+ * Crée un client Supabase "au nom de l'utilisateur" pour une requête donnée,
+ * en passant son token dans l'en-tête Authorization. PostgREST évalue alors
+ * les politiques RLS comme si cet utilisateur était directement connecté —
+ * sans avoir besoin d'un refresh_token ni d'un appel setSession (qui ne
+ * fonctionne pas côté serveur sur un client partagé entre requêtes).
+ */
+function supabaseAsUser(token) {
+  return createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY, {
+    global: { headers: { Authorization: `Bearer ${token}` } },
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+}
 
 const generalReportSchema = z.object({
   startDate: z.string(),
@@ -12,12 +26,6 @@ const generalReportSchema = z.object({
   categoryIds: z.array(z.string()).optional(),
 });
 
-/**
- * POST /api/reports/general
- * Construit un rapport PDF agrégé sur une période donnée.
- * Utilise le token de l'utilisateur (pas le service_role) afin que les
- * politiques RLS s'appliquent normalement à la lecture des données.
- */
 router.post('/general', requireAuth, async (req, res) => {
   const parsed = generalReportSchema.safeParse(req.body);
   if (!parsed.success) {
@@ -27,10 +35,9 @@ router.post('/general', requireAuth, async (req, res) => {
   const token = req.headers.authorization.slice(7);
 
   try {
-    // Client "au nom de l'utilisateur" pour que RLS s'applique
-    supabaseAuthCheck.auth.setSession?.({ access_token: token, refresh_token: '' }).catch(() => {});
+    const client = supabaseAsUser(token);
 
-    let query = supabaseAuthCheck
+    let query = client
       .from('consumption_values')
       .select('consumption_date, value, note, resources(name, unit, category_id, categories(name))')
       .gte('consumption_date', startDate)
@@ -84,14 +91,9 @@ router.post('/general', requireAuth, async (req, res) => {
 const chartExportSchema = z.object({
   title: z.string(),
   subtitle: z.string().optional(),
-  chartImageBase64: z.string(), // data:image/png;base64,...
+  chartImageBase64: z.string(),
 });
 
-/**
- * POST /api/reports/chart
- * Enveloppe une image de graphique (générée côté client avec recharts +
- * html-to-image) dans un PDF avec en-tête officiel.
- */
 router.post('/chart', requireAuth, async (req, res) => {
   const parsed = chartExportSchema.safeParse(req.body);
   if (!parsed.success) {
